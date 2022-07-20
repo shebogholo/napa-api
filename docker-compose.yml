@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+    napa-api:
+        build: ./api
+        volumes:
+            - ./api:/app
+        container_name: napa-api
+        command: bash -c "uvicorn main:app --host 0.0.0.0 --port 160 --reload"
+        ports:
+            - 160:160
+        networks:
+            - napa-api
+
+
+volumes:
+    data:
+
+networks:
+    napa-api:
+        driver: bridge
