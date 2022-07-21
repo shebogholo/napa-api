@@ -29,7 +29,7 @@ async def search(query: SearchQuery):
 
 @router.post('/search_address')
 async def search(query: SearchQuery):
-    response = es.search(index='napa-addresses', size=8, min_score=8, query={'query_string': {'query': query.query}})
+    response = es.search(index='napa-addresses', size=30, min_score=8, query={'query_string': {'query': query.query}})
     results = []
     for hit in response['hits']['hits']:
         results.append(hit['_source'])
