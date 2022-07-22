@@ -50,37 +50,34 @@ async def search(query: SearchQuery):
         print(len(term))
         if len(term) == 5:
             search_query = {
-                                 "bool": {
-                                     "must": [
-                                         {
-                                             "query_string": {"query": query}
-                                         },
-                                         {
-                                             "terms": {
-                                                 "postcode": [term]
-                                             }
-                                         }
-                                     ]
-                                 }
-                             }
+                "bool": {
+                    "must": [
+                        {
+                            "query_string": {"query": query}
+                        },
+                        {
+                            "terms": {
+                                "postcode": [term]
+                            }
+                        }
+                    ]
+                }
+            }
         else:
             search_query = {
-                                 "bool": {
-                                     "must": [
-                                         {
-                                             "query_string": {"query": query}
-                                         },
-                                         {
-                                             "terms": {
-                                                 "number": [term]
-                                             }
-                                         }
-                                     ]
-                                 }
-                             }
-
-
-        
+                "bool": {
+                    "must": [
+                        {
+                            "query_string": {"query": query}
+                        },
+                        {
+                            "terms": {
+                                "number": [term]
+                            }
+                        }
+                    ]
+                }
+            }
 
         response = es.search(index='napa-addresses', size=20,
                              min_score=8, query=search_query)
@@ -92,7 +89,7 @@ async def search(query: SearchQuery):
     else:
         query = ' '.join(query)
         response = es.search(index='napa-addresses', size=20,
-                            min_score=8, query={'query_string': {'query': query}})
+                             min_score=8, query={'query_string': {'query': query}})
         results = []
         for hit in response['hits']['hits']:
             results.append(hit['_source'])
