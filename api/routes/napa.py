@@ -46,8 +46,25 @@ async def search(query: SearchQuery):
         term = query[0]
         del query[0]
         query = ' '.join(query)
-        response = es.search(index='napa-addresses', size=20,
-                             min_score=8, query={
+
+        print(len(term))
+        if len(term) == 5:
+            search_query = {
+                                 "bool": {
+                                     "must": [
+                                         {
+                                             "query_string": {"query": query}
+                                         },
+                                         {
+                                             "terms": {
+                                                 "postcode": [term]
+                                             }
+                                         }
+                                     ]
+                                 }
+                             }
+        else:
+            search_query = {
                                  "bool": {
                                      "must": [
                                          {
@@ -60,7 +77,13 @@ async def search(query: SearchQuery):
                                          }
                                      ]
                                  }
-                             })
+                             }
+
+
+        
+
+        response = es.search(index='napa-addresses', size=20,
+                             min_score=8, query=search_query)
         results = []
         for hit in response['hits']['hits']:
             results.append(hit['_source'])
