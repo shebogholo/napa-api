@@ -151,52 +151,66 @@ async def search(query: SearchQuery):
             results.append(hit['_source'])
         return {'data': results}
 
+    query = ' '.join(userQuery)
+    response = es.search(index=['services', 'addresses'], size=70,
+                            min_score=30, query={
+                                'query_string': {
+                                    #"fields": ['name^8', 'road^3'],
+                                    'query': query
+                                    }
+                                }
+                            )
+    results = []
+    for hit in response['hits']['hits']:
+        results.append(hit['_source'])
+    return {'data': results}
 
-    if userQuery[0].isdigit():
-        term = userQuery[0]
-        del userQuery[0]
-        query = ' '.join(userQuery)
 
-        if len(term) == 5:
-            search_query = {
-                "bool": {
-                    "must": [
-                        {
-                            "query_string": {"query": query}
-                        },
-                        {
-                            "terms": {
-                                "postcode": [term]
-                            }
-                        }
-                    ]
-                }
-            }
-        else:
-            search_query = {
-                "bool": {
-                    "must": [
-                        { "query_string": {"query": query}},
-                        {"terms": {"number": [term]}}
-                    ]
-                }
-            }
+    # if userQuery[0].isdigit():
+    #     term = userQuery[0]
+    #     del userQuery[0]
+    #     query = ' '.join(userQuery)
 
-        response = es.search(index='addresses', size=20,
-                             min_score=8, query=search_query)
-        results = []
-        for hit in response['hits']['hits']:
-            results.append(hit['_source'])
-        return {'data': results}
+    #     if len(term) == 5:
+    #         search_query = {
+    #             "bool": {
+    #                 "must": [
+    #                     {
+    #                         "query_string": {"query": query}
+    #                     },
+    #                     {
+    #                         "terms": {
+    #                             "postcode": [term]
+    #                         }
+    #                     }
+    #                 ]
+    #             }
+    #         }
+    #     else:
+    #         search_query = {
+    #             "bool": {
+    #                 "must": [
+    #                     { "query_string": {"query": query}},
+    #                     {"terms": {"number": [term]}}
+    #                 ]
+    #             }
+    #         }
 
-    else:
-        query = ' '.join(userQuery)
-        response = es.search(index='addresses', size=20,
-                             min_score=8, query={'query_string': {'query': query}})
-        results = []
-        for hit in response['hits']['hits']:
-            results.append(hit['_source'])
-        return {'data': results}
+    #     response = es.search(index='addresses', size=20,
+    #                          min_score=8, query=search_query)
+    #     results = []
+    #     for hit in response['hits']['hits']:
+    #         results.append(hit['_source'])
+    #     return {'data': results}
+
+    # else:
+    #     query = ' '.join(userQuery)
+    #     response = es.search(index='addresses', size=20,
+    #                          min_score=8, query={'query_string': {'query': query}})
+    #     results = []
+    #     for hit in response['hits']['hits']:
+    #         results.append(hit['_source'])
+    #     return {'data': results}
 
 
 class GuidedQuery(BaseModel):
