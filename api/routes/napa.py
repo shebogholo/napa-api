@@ -155,7 +155,7 @@ async def search(query: SearchQuery):
     response = es.search(index=['services', 'addresses'], size=70,
                             min_score=30, query={
                                 'query_string': {
-                                    #"fields": ['name^8', 'road^3'],
+                                    "fields": ['name^9', 'road^8'],
                                     'query': query
                                     }
                                 }
