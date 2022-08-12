@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from typing import List, Dict, Any
 from pydantic import BaseModel
+from fastapi.responses import FileResponse
 from fastapi import APIRouter, Response
 from elasticsearch import Elasticsearch
 from core.db import create_query, get_all_queries
@@ -152,13 +153,57 @@ async def search(query: SearchQuery):
         return {'data': results}
 
     query = ' '.join(userQuery)
-    response = es.search(index=['services', 'addresses'], size=70,
-                            min_score=30, query={
-                                'query_string': {
-                                    "fields": ['name^9', 'road^8'],
-                                    'query': query
-                                    }
+
+    broad_query = {
+        "bool": {
+            "should": [
+                {
+                    "bool": {
+                        "filter": [
+                            {
+                                "terms": {
+                                    "_index": [
+                                        "services"
+                                    ]
                                 }
+                            }
+                        ],
+                        "must": [
+                            {
+                                "query_string": {
+                                    "query": query,
+                                    "fields": [
+                                        "name^15"
+                                    ]
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "bool": {
+                        "filter": [
+                            {
+                                "terms": {
+                                    "_index": ["addresses"]
+                                }
+                            }
+                        ],
+                        "must": [
+                            {
+                                "query_string": {
+                                    "query": query,
+                                    "fields": ['name^9', 'road^8'],
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+    response = es.search(index=['services', 'addresses'], size=100,
+                            min_score=30, query=broad_query
                             )
     results = []
     for hit in response['hits']['hits']:
@@ -251,3 +296,8 @@ async def search_guide(request: GuidedQuery):
 @router.get('/queries')
 async def get_list_of_queries():
     return get_all_queries()
+
+
+@router.get("/images/{filename}")
+async def read_images(filename):
+    return FileResponse(f"./images/{filename}")
